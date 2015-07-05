@@ -4,6 +4,7 @@ Bundler.require(:default, :development, :test)
 
 require 'minitest/spec'
 require 'minitest/autorun'
+require 'mocha/api'
 
 class User < ActiveRecord::Base
   has_many :products

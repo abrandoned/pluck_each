@@ -18,20 +18,20 @@ module ActiveRecord
       options = args.extract_options!
       relation = self
       batch_size = options[:batch_size] || 1000
-      primary_key_offset = 0
+      offset = 0
 
-      relation = relation.reorder(pluck_batch_order).offset(primary_key_offset).limit(batch_size)
+      relation = relation.reorder(pluck_batch_order).offset(offset).limit(batch_size)
       records = relation.pluck(*args)
 
       while records.any?
         records_size = records.size
-        primary_key_offset += records_size
+        offset += records_size
         break if records_size <= 0
 
         yield records
 
         break if records_size < batch_size
-        records = relation.where(table[primary_key].gt(primary_key_offset)).pluck(*args)
+        records = relation.offset(offset).limit(batch_size).pluck(*args)
       end
     end
 
