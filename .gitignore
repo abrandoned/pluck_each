@@ -11,4 +11,5 @@
 *.so
 *.o
 *.a
+*.ruby-*
 mkmf.log
