@@ -17,21 +17,21 @@ module ActiveRecord
     def pluck_in_batches(*args)
       options = args.extract_options!
       relation = self
+      start = options[:start]
       batch_size = options[:batch_size] || 1000
-      offset = 0
 
-      relation = relation.reorder(pluck_batch_order).offset(offset).limit(batch_size)
-      records = relation.pluck(*args)
+      relation = relation.reorder(pluck_batch_order).limit(batch_size)
+      records = start ? relation.where(table[primary_key].gteq(start)) : relation
 
       while records.any?
         records_size = records.size
-        offset += records_size
+        primary_key_offset = records.last.id
         break if records_size <= 0
 
-        yield records
+        yield records.pluck(*args)
 
         break if records_size < batch_size
-        records = relation.offset(offset).limit(batch_size).pluck(*args)
+        records = relation.where(table[primary_key].gt(primary_key_offset))
       end
     end
 
