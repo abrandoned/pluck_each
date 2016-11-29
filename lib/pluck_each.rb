@@ -1,4 +1,3 @@
-require 'pry'
 require "pluck_each/version"
 require "active_record"
 require "active_support/core_ext/array/extract_options"
