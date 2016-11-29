@@ -14,32 +14,13 @@ module ActiveRecord
       end
     end
 
-    def pluck_in_batches(*args)
-      options = args.extract_options!
-      relation = self
+    def pluck_in_batches(*column_names)
+      options = column_names.extract_options!
       batch_size = options[:batch_size] || 1000
-      offset = 0
 
-      relation = relation.reorder(pluck_batch_order).offset(offset).limit(batch_size)
-      records = relation.pluck(*args)
-
-      while records.any?
-        records_size = records.size
-        offset += records_size
-        break if records_size <= 0
-
-        yield records
-
-        break if records_size < batch_size
-        records = relation.offset(offset).limit(batch_size).pluck(*args)
+      in_batches(:of => batch_size, :load => false) do |batch|
+        yield batch.pluck(*column_names)
       end
     end
-
-    private
-
-    def pluck_batch_order
-      "#{quoted_table_name}.#{quoted_primary_key} ASC"
-    end
-
   end
 end
