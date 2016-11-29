@@ -32,11 +32,9 @@ module ActiveRecord
 
       loop do
         batch = batch_relation.pluck(*string_column_names)
-        ids = batch.map { |record| record.at(id_position_in_response) }
+        break if batch.empty?
 
-        break if ids.empty?
-
-        primary_key_offset = ids.last
+        primary_key_offset = batch.last.at(id_position_in_response)
 
         unless id_in_columns_requested
           batch.collect! do |record|
