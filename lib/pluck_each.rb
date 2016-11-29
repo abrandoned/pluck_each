@@ -20,6 +20,7 @@ module ActiveRecord
 
       # Ensure the primary key is selected so we can use it as an offset
       id_in_columns_requested = string_column_names.include?(primary_key)
+      id_only_field_requested = id_in_columns_requested && string_column_names.size == 1
       string_column_names.unshift(primary_key) unless id_in_columns_requested
       id_position_in_response = string_column_names.index(primary_key)
 
@@ -33,12 +34,16 @@ module ActiveRecord
         batch = batch_relation.pluck(*string_column_names)
         break if batch.empty?
 
-        primary_key_offset = batch.last.at(id_position_in_response)
+        primary_key_offset = batch.last
 
-        unless id_in_columns_requested
-          batch.collect! do |record|
-            record.delete_at(id_position_in_response)
-            record
+        if !id_only_field_requested
+          primary_key_offset = primary_key_offset.at(id_position_in_response)
+
+          unless id_in_columns_requested
+            batch.collect! do |record|
+              record.delete_at(id_position_in_response)
+              record
+            end
           end
         end
 

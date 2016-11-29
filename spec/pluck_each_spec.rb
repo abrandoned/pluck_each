@@ -30,6 +30,16 @@ describe PluckEach do
       User.create(:first_name => '5', :last_name => '5')
     end
 
+    it 'plucks :id when only field requested' do
+      values = []
+      User.all.pluck_each(:id) do |id|
+        values << id
+      end
+
+      values.sort!
+      values.must_equal User.all.pluck(:id).sort
+    end
+
     it 'plucks only the fields requested' do
       values = []
       User.all.pluck_each(:first_name) do |first_name|
