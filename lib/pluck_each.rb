@@ -21,8 +21,8 @@ module ActiveRecord
       # Ensure the primary key is selected so we can use it as an offset
       # `pluck` already handles duplicate column names, and it keeps the first occurence
       id_in_columns_requested = string_column_names.include?(primary_key)
-      column_names.unshift(primary_key) unless string_column_names.include?(primary_key)
-      id_position_in_response = column_names.index(primary_key)
+      string_column_names.unshift(primary_key) unless id_in_columns_requested
+      id_position_in_response = string_column_names.index(primary_key)
 
       relation = self
       batch_size = options[:batch_size] || 1000
@@ -31,7 +31,7 @@ module ActiveRecord
       batch_relation = relation
 
       loop do
-        batch = batch_relation.pluck(*column_names)
+        batch = batch_relation.pluck(*string_column_names)
         ids = batch.map { |record| record.at(id_position_in_response) }
 
         break if ids.empty?
@@ -45,7 +45,7 @@ module ActiveRecord
           end
         end
 
-        batch.flatten! if string_column_names.size == 1
+        batch.flatten! if column_names.size == 1
 
         yield batch
 
