@@ -14,32 +14,32 @@ module ActiveRecord
       end
     end
 
-    def pluck_in_batches(*args)
-      options = args.extract_options!
+    def pluck_in_batches(*column_names)
+      options = column_names.extract_options!
+
+      # Ensure the primary key is selected so we can use it as an offset
+      # `pluck` already handles duplicate column names, and it keeps the first occurence
+      column_names.unshift(primary_key)
+
       relation = self
       batch_size = options[:batch_size] || 1000
-      offset = 0
 
-      relation = relation.reorder(pluck_batch_order).offset(offset).limit(batch_size)
-      records = relation.pluck(*args)
+      relation = relation.reorder(batch_order).limit(batch_size)
+      batch_relation = relation
 
-      while records.any?
-        records_size = records.size
-        offset += records_size
-        break if records_size <= 0
+      loop do
+        batch = batch_relation.pluck(*column_names)
+        ids = batch.map(&:first)
 
-        yield records
+        break if ids.empty?
 
-        break if records_size < batch_size
-        records = relation.offset(offset).limit(batch_size).pluck(*args)
+        primary_key_offset = ids.last
+
+        yield batch
+
+        break if ids.length < batch_size
+        batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
       end
     end
-
-    private
-
-    def pluck_batch_order
-      "#{quoted_table_name}.#{quoted_primary_key} ASC"
-    end
-
   end
 end
