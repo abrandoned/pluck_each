@@ -47,7 +47,7 @@ module ActiveRecord
 
         yield batch
 
-        break if ids.length < batch_size
+        break if batch.size < batch_size
         batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
       end
     end
