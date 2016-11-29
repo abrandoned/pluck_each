@@ -16,10 +16,12 @@ module ActiveRecord
 
     def pluck_in_batches(*column_names)
       options = column_names.extract_options!
+      string_column_names = column_names.map(&:to_s)
 
       # Ensure the primary key is selected so we can use it as an offset
-      # `pluck` already handles duplicate column names, and it keeps the first occurence
-      column_names.unshift(primary_key)
+      id_in_columns_requested = string_column_names.include?(primary_key)
+      string_column_names.unshift(primary_key) unless id_in_columns_requested
+      id_position_in_response = string_column_names.index(primary_key)
 
       relation = self
       batch_size = options[:batch_size] || 1000
@@ -28,16 +30,23 @@ module ActiveRecord
       batch_relation = relation
 
       loop do
-        batch = batch_relation.pluck(*column_names)
-        ids = batch.map(&:first)
+        batch = batch_relation.pluck(*string_column_names)
+        break if batch.empty?
 
-        break if ids.empty?
+        primary_key_offset = batch.last.at(id_position_in_response)
 
-        primary_key_offset = ids.last
+        unless id_in_columns_requested
+          batch.collect! do |record|
+            record.delete_at(id_position_in_response)
+            record
+          end
+        end
+
+        batch.flatten! if column_names.size == 1
 
         yield batch
 
-        break if ids.length < batch_size
+        break if batch.size < batch_size
         batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
       end
     end
