@@ -19,7 +19,6 @@ module ActiveRecord
       string_column_names = column_names.map(&:to_s)
 
       # Ensure the primary key is selected so we can use it as an offset
-      # `pluck` already handles duplicate column names, and it keeps the first occurence
       id_in_columns_requested = string_column_names.include?(primary_key)
       string_column_names.unshift(primary_key) unless id_in_columns_requested
       id_position_in_response = string_column_names.index(primary_key)
