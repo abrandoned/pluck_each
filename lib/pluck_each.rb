@@ -52,7 +52,13 @@ module ActiveRecord
         yield batch
 
         break if batch.size < batch_size
-        batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
+
+        # some relations don't have arel_attribute, need to figure that out
+        if respond_to?(:arel_attribute)
+          batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
+        else
+          batch_relation = relation.where("#{primary_key} > ?", primary_key_offset)
+        end
       end
     end
   end
