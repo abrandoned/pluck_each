@@ -53,12 +53,9 @@ module ActiveRecord
 
         break if batch.size < batch_size
 
-        # some relations don't have arel_attribute, need to figure that out
-        if respond_to?(:arel_attribute)
-          batch_relation = relation.where(arel_attribute(primary_key).gt(primary_key_offset))
-        else
-          batch_relation = relation.where("#{primary_key} > ?", primary_key_offset)
-        end
+        # Rails 5 introduced "arel_attribute" but keeps support for "table" so using
+        # "table" as the basis for this for now
+        batch_relation = relation.where(table[primary_key].gt(primary_key_offset))
       end
     end
   end
