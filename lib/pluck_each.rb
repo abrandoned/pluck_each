@@ -27,7 +27,7 @@ module ActiveRecord
       relation = self
       batch_size = options[:batch_size] || 1000
 
-      relation = relation.reorder(batch_order).limit(batch_size)
+      relation = relation.reorder(:asc).limit(batch_size)
       batch_relation = relation
 
       loop do
