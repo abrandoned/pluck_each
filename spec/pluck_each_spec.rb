@@ -12,11 +12,11 @@ describe PluckEach do
 
   describe 'API' do
     it 'adds pluck_each to Arel relation nodes' do
-      User.all.must_respond_to :pluck_each
+      _(User.all).must_respond_to :pluck_each
     end
 
     it 'adds pluck_in_batches to Arel relation nodes' do
-      User.all.must_respond_to :pluck_in_batches
+      _(User.all).must_respond_to :pluck_in_batches
     end
   end
 
@@ -43,7 +43,7 @@ describe PluckEach do
       end
 
       values.sort!
-      values.must_equal ["1", "2", "3"]
+      _(values).must_equal ["1", "2", "3"]
     end
 
     it 'plucks :id when only field requested' do
@@ -53,7 +53,7 @@ describe PluckEach do
       end
 
       values.sort!
-      values.must_equal User.all.pluck(:id).sort
+      _(values).must_equal User.all.pluck(:id).sort
     end
 
     it 'plucks only the fields requested' do
@@ -63,7 +63,7 @@ describe PluckEach do
       end
 
       values.sort!
-      values.must_equal ['1', '2', '3', '4', '5']
+      _(values).must_equal ['1', '2', '3', '4', '5']
     end
 
     it 'allows batch_size in options to determine batch size' do
@@ -74,9 +74,9 @@ describe PluckEach do
         count += 1
       end
 
-      count.must_equal(5)
+      _(count).must_equal(5)
       values.sort!
-      values.must_equal ['1', '2', '3', '4', '5']
+      _(values).must_equal ['1', '2', '3', '4', '5']
     end
   end
 
@@ -97,7 +97,7 @@ describe PluckEach do
       end
 
       batch_sizes.sort!
-      batch_sizes.must_equal [1, 2, 2]
+      _(batch_sizes).must_equal [1, 2, 2]
     end
   end
 end
